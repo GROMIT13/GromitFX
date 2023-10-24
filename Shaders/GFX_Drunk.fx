@@ -100,9 +100,9 @@ float2x2 rotate2d(float angle)
                 	sin(angle),cos(angle));
 }
 
-float3 PS_DrunkFXmain(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
+float3 PS_Drunk(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
 {
-    //Calculate mask to prevent getting out of uv
+    //Calculate mask to prevent getting out of uv bounds
     float2 maskUV = float2((uv.x/BUFFER_HEIGHT)*BUFFER_WIDTH,uv.y);
     float mask = smoothstep(0.0,maskWidth,maskUV.x) * 
                  smoothstep(0.0,maskWidth,maskUV.y) *
@@ -114,19 +114,6 @@ float3 PS_DrunkFXmain(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TAR
 	uv = frac(uv);
 	float3 input = tex2D(ReShade::BackBuffer, uv).rgb;
     return input;
-
-    //uv.x = (uv.x/BUFFER_HEIGHT)*BUFFER_WIDTH;
-    //float mask = smoothstep(0.0,0.1,uv.x);
-
-
-    /*uv -= 0.5;
-    uv.x = (uv.x/BUFFER_HEIGHT)*BUFFER_WIDTH;
-    uv =  abs(uv);
-    uv *= (9.0/4.0);
-    float sdf = sdfBox(uv,float2(BUFFER_WIDTH/BUFFER_HEIGHT,0.1));
-    return float3(frac(sdf.xxx));*/
-    //return float3(frac(uv),0.0);
-    //return float3(input);
 }
 
 technique GFX_Drunk
@@ -134,6 +121,6 @@ technique GFX_Drunk
     pass
     {
         VertexShader = PostProcessVS;
-        PixelShader = PS_DrunkFXmain;
+        PixelShader = PS_Drunk;
     }
 }

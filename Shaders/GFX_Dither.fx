@@ -1,3 +1,5 @@
+//TO DO: FIX SHIT
+
 #include "ReShade.fxh"
 
 uniform int ColorAmount <
@@ -57,7 +59,7 @@ float3 QuantizeColor(float3 color)
 }
 
 
-float3 PS_DitherFXmain(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
+float3 PS_Dither(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
 {
     float3 input = tex2D(ReShade::BackBuffer, uv).rgb;
 
@@ -69,10 +71,6 @@ float3 PS_DitherFXmain(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TA
     input.g = step(GetBayer2(pixelPos.x,pixelPos.y), input.g);
     input.b = step(GetBayer2(pixelPos.x,pixelPos.y), input.b);
 
-    //  input.r = floor(input.r * (float(ColorAmount) - 1.0) + 0.5) / (float(ColorAmount)-1.0);
-    //input.g = floor(input.g * (float(ColorAmount) - 1.0) + 0.5) / (float(ColorAmount)-1.0);
-    //input.b = floor(input.b * (float(ColorAmount) - 1.0) + 0.5) / (float(ColorAmount)-1.0);
-    //input = floor(input*ColorAmount)/(ColorAmount-1.0);
     return float3(input);
 }
 
@@ -81,6 +79,6 @@ technique GFX_Dither
     pass
     {
         VertexShader = PostProcessVS;
-        PixelShader = PS_DitherFXmain;
+        PixelShader = PS_Dither;
     }
 }
