@@ -1,4 +1,5 @@
 #include "ReShade.fxh"
+#include "GFX_Utils.fxh"
 
 uniform float Exposure <
     ui_type = "slider";
@@ -41,18 +42,18 @@ float3 ColorToGrayscale(float3 col)
     return dot(col.rgb,float3(0.299, 0.578, 0.114));
 }
 
-float3 PS_ColorCorrection(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
+float4 PS_ColorCorrection(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
 {
-    float3 color = tex2D(ReShade::BackBuffer, uv).rgb;
+    float4 color = tex2D(GFX::BackBuffer, uv);
 
     // Exposure
-    color *= Exposure;
+    color.rgb *= Exposure;
     // Constrast, Brightness
-    color = max(0.0, Contrast * (color - MidPoint) + MidPoint + Brightness);
+    color.rgb = max(0.0, Contrast * (color.rgb - MidPoint) + MidPoint + Brightness);
     // Saturation
-    color = max(0.0, lerp(ColorToGrayscale(color),color,Saturation));
+    color.rgb = max(0.0, lerp(ColorToGrayscale(color.rgb),color.rgb,Saturation));
     // Gamma Correction
-    color = pow(color,GammaCorrection);
+    color.rgb = pow(color.rgb,GammaCorrection);
     return color;
 }
 
@@ -62,5 +63,6 @@ technique GFX_ColorCorrection
     {
         VertexShader = PostProcessVS;
         PixelShader = PS_ColorCorrection;
+        RenderTarget = GFX::BackBufferTex;
     }
 }
