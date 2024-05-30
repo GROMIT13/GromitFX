@@ -1,4 +1,5 @@
 #include "ReShade.fxh"
+#include "GFX_Utils.fxh"
 
 uniform float timer < source = "timer"; >;
 
@@ -25,6 +26,9 @@ uniform float maskWidth <
     ui_min =  0.0;
     ui_max =  2.0;
 > = 0.15;
+
+texture2D TempTex { Width = BUFFER_WIDTH; Height = BUFFER_HEIGHT; Format = RGBA16F; };
+sampler2D TempSampler { Texture = TempTex; MagFilter = POINT; MinFilter = POINT; MipFilter = POINT; };
 
 float3 mod289 (float3 x)
 {
@@ -112,8 +116,13 @@ float3 PS_Drunk(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
     float noise = snoise((uv * Density) + ((timer/10000) * Speed))/10;
 	uv = mul(rotate2d(noise * FoldAmount * mask),uv);
 	uv = frac(uv);
-	float3 input = tex2D(ReShade::BackBuffer, uv).rgb;
+	float3 input = tex2D(GFX::BackBuffer, uv).rgb;
     return input;
+}
+
+float4 PS_End(float4 vpos : VS_Position, float2 uv : TEXCOORD0) : SV_TARGET
+{
+    return tex2D(TempSampler,uv);
 }
 
 technique GFX_Drunk
@@ -122,5 +131,13 @@ technique GFX_Drunk
     {
         VertexShader = PostProcessVS;
         PixelShader = PS_Drunk;
+        RenderTarget = TempTex;
+    }
+
+    pass
+    {
+        VertexShader = PostProcessVS;
+        PixelShader = PS_End;
+        RenderTarget = GFX::BackBufferTex;
     }
 }
